@@ -1,0 +1,3 @@
+Go to cmd and paste this command
+
+pg_ctl start -D "C:\PostgreSQL\Data" -l logfile

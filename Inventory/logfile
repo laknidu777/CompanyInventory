@@ -1,0 +1,47 @@
+2025-02-08 13:34:39.244 +0530 [12648] LOG:  starting PostgreSQL 17.2 on x86_64-windows, compiled by msvc-19.42.34435, 64-bit
+2025-02-08 13:34:39.250 +0530 [12648] LOG:  listening on IPv6 address "::1", port 5432
+2025-02-08 13:34:39.250 +0530 [12648] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2025-02-08 13:34:39.348 +0530 [10508] LOG:  database system was interrupted; last known up at 2025-02-06 13:42:39 +0530
+2025-02-08 13:34:39.969 +0530 [10508] LOG:  database system was not properly shut down; automatic recovery in progress
+2025-02-08 13:34:39.977 +0530 [10508] LOG:  redo starts at 0/1ADA3A8
+2025-02-08 13:34:39.977 +0530 [10508] LOG:  invalid record length at 0/1ADA3E0: expected at least 24, got 0
+2025-02-08 13:34:39.977 +0530 [10508] LOG:  redo done at 0/1ADA3A8 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
+2025-02-08 13:34:39.986 +0530 [4644] LOG:  checkpoint starting: end-of-recovery immediate wait
+2025-02-08 13:34:40.017 +0530 [4644] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.004 s, sync=0.007 s, total=0.036 s; sync files=2, longest=0.004 s, average=0.004 s; distance=0 kB, estimate=0 kB; lsn=0/1ADA3E0, redo lsn=0/1ADA3E0
+2025-02-08 13:34:40.040 +0530 [12648] LOG:  database system is ready to accept connections
+2025-02-08 13:34:57.301 +0530 [17496] FATAL:  password authentication failed for user "postgres"
+2025-02-08 13:34:57.301 +0530 [17496] DETAIL:  Password does not match for user "postgres".
+	Connection matched file "C:/PostgreSQL/Data/pg_hba.conf" line 117: "host    all             all             ::1/128                 password"
+2025-02-08 13:34:57.352 +0530 [6116] FATAL:  password authentication failed for user "postgres"
+2025-02-08 13:34:57.352 +0530 [6116] DETAIL:  Password does not match for user "postgres".
+	Connection matched file "C:/PostgreSQL/Data/pg_hba.conf" line 115: "host    all             all             127.0.0.1/32            password"
+2025-02-08 13:51:29.280 +0530 [18176] LOG:  invalid length of startup packet
+2025-02-08 13:51:48.047 +0530 [15116] LOG:  invalid length of startup packet
+2025-02-08 15:51:49.909 +0530 [17812] LOG:  invalid length of startup packet
+2025-02-08 15:59:57.703 +0530 [16960] FATAL:  password authentication failed for user "postgre"
+2025-02-08 15:59:57.703 +0530 [16960] DETAIL:  Role "postgre" does not exist.
+	Connection matched file "C:/PostgreSQL/Data/pg_hba.conf" line 117: "host    all             all             ::1/128                 password"
+2025-02-08 16:01:51.617 +0530 [12648] LOG:  received fast shutdown request
+2025-02-08 16:01:51.619 +0530 [9384] ERROR:  canceling statement due to user request
+2025-02-08 16:01:51.625 +0530 [12648] LOG:  aborting any active transactions
+2025-02-08 16:01:51.625 +0530 [4212] FATAL:  terminating connection due to administrator command
+2025-02-08 16:01:51.625 +0530 [17268] FATAL:  terminating connection due to administrator command
+2025-02-08 16:01:51.626 +0530 [2836] FATAL:  terminating connection due to administrator command
+2025-02-08 16:01:51.629 +0530 [12648] LOG:  background worker "logical replication launcher" (PID 9384) exited with exit code 1
+2025-02-08 16:01:51.641 +0530 [4644] LOG:  shutting down
+2025-02-08 16:01:51.647 +0530 [4644] LOG:  checkpoint starting: shutdown immediate
+2025-02-08 16:01:51.677 +0530 [4644] LOG:  checkpoint complete: wrote 1 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.004 s, total=0.036 s; sync files=1, longest=0.004 s, average=0.004 s; distance=0 kB, estimate=0 kB; lsn=0/1ADA490, redo lsn=0/1ADA490
+2025-02-08 16:01:51.688 +0530 [12648] LOG:  database system is shut down
+2025-02-08 16:02:10.633 +0530 [1860] LOG:  starting PostgreSQL 17.2 on x86_64-windows, compiled by msvc-19.42.34435, 64-bit
+2025-02-08 16:02:10.639 +0530 [1860] LOG:  listening on IPv6 address "::1", port 5432
+2025-02-08 16:02:10.639 +0530 [1860] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2025-02-08 16:02:10.716 +0530 [10752] LOG:  database system was shut down at 2025-02-08 16:01:51 +0530
+2025-02-08 16:02:10.746 +0530 [1860] LOG:  database system is ready to accept connections
+2025-02-08 16:03:56.867 +0530 [1860] LOG:  received fast shutdown request
+2025-02-08 16:03:56.868 +0530 [15292] ERROR:  canceling statement due to user request
+2025-02-08 16:03:56.875 +0530 [1860] LOG:  aborting any active transactions
+2025-02-08 16:03:56.875 +0530 [1860] LOG:  background worker "logical replication launcher" (PID 15292) exited with exit code 1
+2025-02-08 16:03:56.880 +0530 [20752] LOG:  shutting down
+2025-02-08 16:03:56.885 +0530 [20752] LOG:  checkpoint starting: shutdown immediate
+2025-02-08 16:03:56.922 +0530 [20752] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.004 s, sync=0.009 s, total=0.043 s; sync files=2, longest=0.005 s, average=0.005 s; distance=0 kB, estimate=0 kB; lsn=0/1ADA540, redo lsn=0/1ADA540
+2025-02-08 16:03:56.931 +0530 [1860] LOG:  database system is shut down
