@@ -1,3 +1,7 @@
-Go to cmd and paste this command
+1.Migration for monitoring -->
 
-pg_ctl start -D "C:\PostgreSQL\Data" -l logfile
+docker exec -it inventory-backend npx sequelize-cli db:migrate --env monitoring --migrations-path migrations/monitoring
+
+2.Migration for client side in development -->
+
+docker exec -it inventory-backend npm run migrate

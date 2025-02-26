@@ -1,0 +1,62 @@
+version: '3.1'
+
+services:
+  db:
+    image: mariadb:10.6
+    restart: always
+    container_name: database
+    environment:
+      MARIADB_ROOT_PASSWORD: example_root_password
+      MARIADB_DATABASE: inventory  # Primary database
+      MARIADB_USER: app_user
+      MARIADB_PASSWORD: app_password
+      # We'll create the second database using an init script
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql  # Add init script
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5  
+
+  backend:
+    build:
+      context: ./inventory-backend
+      dockerfile: Dockerfile
+    container_name: inventory-backend
+    restart: always
+    ports:
+      - "5002:5002"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Inventory Database
+      DB_HOST: db
+      DB_USER: app_user
+      DB_PASSWORD: app_password
+      DB_NAME: inventory
+      DB_PORT: 3306
+
+      # Monitoring Database (same connection, different database name)
+      MONITORING_DB_HOST: db
+      MONITORING_DB_USER: app_user
+      MONITORING_DB_PASSWORD: app_password
+      MONITORING_DB_NAME: monitoring
+      MONITORING_DB_PORT: 3306
+      JWT_SECRET: your_very_secure_secret_key
+    volumes:
+      - ./inventory-backend:/app
+    working_dir: /app
+    command: npm run dev
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+
+volumes:
+  db_data:
