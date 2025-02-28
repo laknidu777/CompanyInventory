@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha",
     "start": "node app.js",
-    "dev": "node app.js",
+    "dev": "nodemon app.js",
     "migrate": "sequelize-cli db:migrate"
   },
   "keywords": [],
