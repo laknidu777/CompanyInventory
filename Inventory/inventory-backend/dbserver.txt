@@ -5,3 +5,7 @@ docker exec -it inventory-backend npx sequelize-cli db:migrate --env monitoring 
 2.Migration for client side in development -->
 
 docker exec -it inventory-backend npm run migrate
+
+3. backend will berun locally so when migrating use --> 
+npx sequelize-cli db:migrate --config config/config.js
+npx sequelize-cli db:migrate --env monitoring --migrations-path migrations/monitoring
