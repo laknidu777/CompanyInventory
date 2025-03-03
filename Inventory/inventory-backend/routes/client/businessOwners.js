@@ -3,9 +3,7 @@ import { createBusinessOwner, businessOwnerLogin } from "../../controllers/clien
 
 const router = express.Router();
 
-// ✅ Business Owner Signup
 router.post("/signup", createBusinessOwner);
-// ✅ Business Owner Login
 router.post("/login", businessOwnerLogin);
 
 export default router;

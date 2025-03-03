@@ -1,6 +1,7 @@
 import { DataTypes, Model } from "sequelize";
 import { inventoryDB } from "../../db.js";
 import BusinessOwner from "./businessowner.js";  // Import BusinessOwner model
+import Business from "./business.js";  // Import Business model
 
 class Employee extends Model {}
 
@@ -29,7 +30,7 @@ Employee.init(
       allowNull: false,
     },
     emp_role: {
-      type: DataTypes.ENUM("Manager", "Technician", "Staff"),
+      type: DataTypes.ENUM("Admin", "Manager", "HR", "Editor", "Viewer"),
       allowNull: false,
     },
     bo_id: {
@@ -38,6 +39,15 @@ Employee.init(
       references: {
         model: BusinessOwner,
         key: "bo_id",
+      },
+      onDelete: "CASCADE",
+    },
+    assigned_business_id: {  // ✅ Renamed from business_id
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "Businesses", // Ensure this matches the actual table name
+        key: "id",
       },
       onDelete: "CASCADE",
     },
@@ -52,5 +62,8 @@ Employee.init(
 // Establish the relationship between BusinessOwner and Employee
 BusinessOwner.hasMany(Employee, { foreignKey: "bo_id", onDelete: "CASCADE" });
 Employee.belongsTo(BusinessOwner, { foreignKey: "bo_id" });
+Business.hasMany(Employee, { foreignKey: "business_id", onDelete: "CASCADE" });
+Employee.belongsTo(Business, { foreignKey: "business_id" });
+
 
 export default Employee;
