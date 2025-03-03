@@ -72,7 +72,7 @@ export const businessOwnerLogin = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    console.log("✅ Login Successful - Issued Token:", token);
+    //console.log("✅ Login Successful - Issued Token:", token);
 
     res.json({ message: "Login successful", token });
   } catch (error) {

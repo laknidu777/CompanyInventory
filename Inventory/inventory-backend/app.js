@@ -1,9 +1,6 @@
 import express from "express";
 import cors from "cors";
 import { inventoryDB, monitoringDB } from "./db.js"; 
-import dotenv from "dotenv";
-dotenv.config();
-
 
 // Import Routes
 import businessOwnerRoutes from "./routes/client/businessOwners.js";

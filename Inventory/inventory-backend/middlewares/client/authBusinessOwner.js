@@ -7,11 +7,6 @@ dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
 // Ensure correct JWT secret key from .env
 const JWT_SECRET = process.env.JWT_SECRET_CLIENT;
-console.log("Loaded JWT_SECRET_CLIENT:", process.env.JWT_SECRET_CLIENT);
-
-if (!JWT_SECRET) {
-  console.error("❌ JWT_SECRET is not defined in .env");
-}
 
 /**
  * Middleware to authenticate Business Owners
@@ -25,11 +20,10 @@ export const authenticateBusinessOwner = (req, res, next) => {
   }
 
   const token = authHeader.split(" ")[1];
-  console.log("🔹 Received Token:", token);
+  //console.log("🔹 Received Token:", token);
 
   try {
       const decoded = jwt.verify(token, JWT_SECRET);
-      console.log("✅ Decoded User:", decoded);
       req.user = decoded;
       next();
   } catch (err) {
