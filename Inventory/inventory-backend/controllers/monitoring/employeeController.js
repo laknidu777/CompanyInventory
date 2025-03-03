@@ -1,4 +1,5 @@
 import Employee from "../../models/monitoring/employee.js";
+import bcrypt from "bcryptjs";
 
 /**
  * Create a new employee
@@ -6,19 +7,20 @@ import Employee from "../../models/monitoring/employee.js";
 export const createEmployee = async (req, res) => {
   try {
     console.log("Received request body:", req.body);
-    const { emp_name, emp_email, emp_contact_number, emp_role, emp_designation, emp_department } = req.body;
+    const { emp_name, emp_email, emp_contact_number, emp_role, emp_designation, emp_department,password } = req.body;
 
-    if (!emp_name || !emp_email || !emp_role || !emp_department) {
+    if (!emp_name || !emp_email || !emp_role || !emp_department || !password) {
       return res.status(400).json({ error: "All fields are required." });
     }
-
+    const hashedPassword = await bcrypt.hash(password, 10);
     const employee = await Employee.create({
-    emp_name,
+      emp_name,
       emp_email,
       emp_contact_number,
       emp_role,
       emp_designation, 
-      emp_department,  });
+      emp_department,
+      password:hashedPassword,});
     res.status(201).json({ message: "Employee created successfully", employee });
   } catch (error) {
     console.error("Error creating employee:", error);

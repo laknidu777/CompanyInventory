@@ -1,5 +1,5 @@
 import { DataTypes, Model } from "sequelize";
-import {inventoryDB} from "../db.js";
+import {inventoryDB} from "../../db.js";
 
 class BusinessOwner extends Model {}
 
@@ -35,14 +35,21 @@ BusinessOwner.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-
     bo_nic: {
       type: DataTypes.STRING,
       allowNull: true,
       unique: true,
     },
+    bo_role: {
+      type: DataTypes.ENUM("Super Admin", "Admin", "Viewer"),
+      allowNull: false,
+      //defaultValue: "Admin",
+    },
     
-    
+    bo_password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },    
   },
   {
     sequelize: inventoryDB, 

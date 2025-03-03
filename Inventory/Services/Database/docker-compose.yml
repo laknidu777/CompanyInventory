@@ -10,6 +10,7 @@ services:
       MARIADB_DATABASE: inventory  # Primary database
       MARIADB_USER: app_user
       MARIADB_PASSWORD: app_password
+      
     ports:
       - "3306:3306"
     volumes:
@@ -27,4 +28,3 @@ services:
 
 volumes:
   db_data:
-
