@@ -1,91 +1,81 @@
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import Employee from "../../models/client/employee.js";
 import Business from "../../models/client/business.js";
 
-
-// export const getEmployeesByBusinessOwner = async (req, res) => {
-//   try {
-//     const employees = await Employee.findAll({ where: { bo_id: req.user.bo_id } });
-//     res.json(employees);
-//   } catch (err) {
-//     console.error("Error fetching employees:", err);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// };
-export const getEmployeesByBusiness = async (req, res) => {
+export const employeeLogin = async (req, res) => {
   try {
-    const { business_id } = req.params; // ✅ Extract business_id from request
+      //console.log("🔹 Login Request Received:", req.body);
+      const { emp_email, emp_password } = req.body;
 
-    console.log("🔹 Fetching Employees for Business ID:", business_id);
+      // Check if email exists in database
+      const employee = await Employee.findOne({ where: { emp_email } });
+      if (!employee) {
+          console.log("❌ Employee not found");
+          return res.status(401).json({ error: "Invalid email or password" });
+      }
+      //console.log("✅ Employee Found:", employee);
 
-    // ✅ Ensure the requesting Business Owner owns this business
-    const business = await Business.findOne({
-      where: { id: business_id, owner_id: req.user.bo_id }, // ✅ Use `owner_id`
-    });
+      // Compare password
+      const isMatch = await bcrypt.compare(emp_password, employee.emp_password);
+      if (!isMatch) {
+          console.log("❌ Password incorrect");
+          return res.status(401).json({ error: "Invalid email or password" });
+      }
+      //console.log("✅ Password Matched");
 
-    if (!business) {
-      return res.status(403).json({ error: "Unauthorized access to this business." });
-    }
+      // Generate Token
+      const token = jwt.sign(
+          {
+              emp_id: employee.emp_id,
+              emp_email: employee.emp_email,
+              emp_role: employee.emp_role,
+              assigned_business_id: employee.assigned_business_id
+          },
+          process.env.EMPLOYEE_JWT_SECRET,
+          { expiresIn: "6h" }
+      );
 
-    // ✅ Fetch only employees for the requested business
-    const employees = await Employee.findAll({
-      attributes: [
-        "emp_id",
-        "emp_name",
-        "emp_email",
-        "emp_role",
-        "bo_id",
-        "assigned_business_id", // ✅ Ensure correct column is selected
-        "createdAt",
-        "updatedAt",
-      ],
-      where: { assigned_business_id: business_id }, // ✅ Ensure correct field is used
-    });
-
-    res.json(employees);
-  } catch (err) {
-    console.error("Error fetching employees:", err);
-    res.status(500).json({ error: "Internal server error" });
+      //console.log("✅ Token Generated:", token);
+      res.json({ message: "Login successful", token });
+  } catch (error) {
+      console.error("🔥 Login Error:", error);
+      res.status(500).json({ error: "Internal server error" });
   }
 };
 
-
-export const createEmployeeForBusinessOwner = async (req, res) => {
+export const createEmployee = async (req, res) => {
   try {
     const { emp_name, emp_email, emp_role, emp_password } = req.body;
-    const { business_id } = req.params; // ✅ Extract business_id (matches route)
-
-    console.log("🔹 Extracted business_id:", business_id); // Debugging
-
-    if (!business_id) {
-      return res.status(400).json({ error: "Business ID is required." });
-    }
-
-    if (isNaN(business_id)) {
-      return res.status(400).json({ error: "Invalid Business ID format." });
-    }
+    const { business_id } = req.params;
 
     if (!emp_name || !emp_email || !emp_role || !emp_password) {
       return res.status(400).json({ error: "All fields are required." });
     }
 
-    // ✅ Ensure business_id is valid
-    const business = await Business.findOne({ where: { id: business_id } });
-    if (!business) {
-      return res.status(404).json({ error: "Business not found." });
+    // ✅ Allow Business Owners or Employees to create an employee
+    const isBusinessOwner = req.user.bo_id ? true : false;
+    const isEmployee = req.user.emp_id ? true : false;
+
+    if (!isBusinessOwner && !isEmployee) {
+      return res.status(403).json({ error: "Unauthorized: Only Business Owners or Admin/HR Employees can create employees." });
     }
 
-    // ✅ Hash the password before saving
+    // ✅ Ensure Admins & HR Employees can only create employees within their assigned business
+    if (isEmployee && req.user.assigned_business_id !== parseInt(business_id)) {
+      return res.status(403).json({ error: "Unauthorized: You can only create employees in your assigned business." });
+    }
+
+    // ✅ Hash password before storing
     const hashedPassword = await bcrypt.hash(emp_password, 10);
 
-    // ✅ Assign the employee to the specified business
     const employee = await Employee.create({
       emp_name,
       emp_email,
       emp_role,
       emp_password: hashedPassword,
-      assigned_business_id: business_id, // ✅ Use assigned_business_id for DB column
-      bo_id: business.owner_id,
+      assigned_business_id: business_id,
+      bo_id: isBusinessOwner ? req.user.bo_id : null // ✅ Store Business Owner ID if applicable
     });
 
     res.status(201).json({ message: "Employee created successfully", employee });
@@ -94,60 +84,125 @@ export const createEmployeeForBusinessOwner = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
-export const updateEmployee = async (req, res) => {
+
+export const getEmployeesByBusiness = async (req, res) => {
   try {
-    const { emp_name, emp_email, emp_role } = req.body;
-    const { emp_id } = req.params;
+    const { business_id } = req.params;
 
-    console.log("🔹 Updating Employee ID:", emp_id);
+    const employees = await Employee.findAll({
+      where: { assigned_business_id: business_id },
+      attributes: ["emp_id", "emp_name", "emp_email", "emp_role", "assigned_business_id"],
+    });
 
-    if (!emp_name && !emp_email && !emp_role) {
+    res.json(employees);
+  } catch (err) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const updateEmployeeSelf = async (req, res) => {
+  try {
+    const { emp_name, emp_email } = req.body;
+    const emp_id = req.user.emp_id; 
+
+    if (!emp_name && !emp_email) {
       return res.status(400).json({ error: "At least one field is required to update." });
     }
 
-    // ✅ Ensure employee exists
     const employee = await Employee.findOne({ where: { emp_id } });
+    if (!employee) {
+      return res.status(404).json({ error: "Employee not found." });
+    }
+
+    if (req.body.emp_role) {
+      return res.status(403).json({ error: "You cannot change your role." });
+    }
+
+    if (emp_name) employee.emp_name = emp_name;
+    if (emp_email) employee.emp_email = emp_email;
+
+    await employee.save();
+    res.json({ message: "Profile updated successfully", employee });
+  } catch (err) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const getEmployeeProfile = async (req, res) => {
+  try {
+    const employee = await Employee.findOne({
+      where: { emp_id: req.user.emp_id },
+      attributes: ["emp_id", "emp_name", "emp_email", "emp_role", "assigned_business_id", "createdAt"],
+    });
 
     if (!employee) {
       return res.status(404).json({ error: "Employee not found." });
     }
 
-    // ✅ Ensure that the employee belongs to the correct business
-    if (employee.assigned_business_id !== req.user.assigned_business_id) {
-      return res.status(403).json({ error: "Unauthorized to update this employee." });
+    res.json(employee);
+  } catch (err) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+export const updateEmployee = async (req, res) => {
+  try {
+    const { emp_id } = req.params;
+    const { emp_name, emp_email, emp_role, emp_password } = req.body;
+
+    console.log(`🔹 Updating Employee ID: ${emp_id}`);
+
+    // ✅ Find Employee using `assigned_business_id`
+    const employee = await Employee.findByPk(emp_id);
+
+    if (!employee) {
+      return res.status(404).json({ error: "Employee not found." });
     }
 
-    // ✅ Update fields dynamically
+    // ✅ Ensure the update request is coming from the correct business
+    if (req.user.assigned_business_id && req.user.assigned_business_id !== employee.assigned_business_id) {
+      return res.status(403).json({ error: "Unauthorized: Cannot update employees from another business." });
+    }
+
+    // ✅ Update fields only if provided
     if (emp_name) employee.emp_name = emp_name;
     if (emp_email) employee.emp_email = emp_email;
     if (emp_role) employee.emp_role = emp_role;
+    if (emp_password) employee.emp_password = await bcrypt.hash(emp_password, 10);
 
     await employee.save();
 
-    res.status(200).json({ message: "Employee updated successfully", employee });
+    res.json({ message: "Employee updated successfully", employee });
   } catch (err) {
     console.error("Error updating employee:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 };
-
 export const deleteEmployee = async (req, res) => {
   try {
-    const { emp_id } = req.params; // ✅ Extract employee ID from URL
+    const { emp_id } = req.params;
+    const selectedBusinessId = req.user.business_id; // ✅ Fix: Get business_id from req.user
 
-    console.log("🔹 Deleting Employee ID:", emp_id);
+    if (!selectedBusinessId) {
+      return res.status(403).json({ error: "Unauthorized: No business selected." });
+    }
 
-    // ✅ Ensure employee exists
+    // Fetch the employee to verify business ownership
     const employee = await Employee.findByPk(emp_id);
+
     if (!employee) {
       return res.status(404).json({ error: "Employee not found." });
     }
 
-    await employee.destroy();
+    if (employee.assigned_business_id !== selectedBusinessId) {
+      return res.status(403).json({ error: "Unauthorized: You can only delete employees in your assigned business." });
+    }
 
-    res.status(200).json({ message: "Employee deleted successfully" });
-  } catch (err) {
-    console.error("Error deleting employee:", err);
+    await employee.destroy();
+    return res.json({ message: "Employee deleted successfully" });
+
+  } catch (error) {
+    console.error("Error deleting employee:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
+

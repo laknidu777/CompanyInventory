@@ -32,6 +32,13 @@ export const authenticateBusinessOwner = (req, res, next) => {
   }
 };
 
+// Middleware to check if business_id exists after selection
+export const validateBusinessSelection = (req, res, next) => {
+  if (!req.user.business_id) {
+      return res.status(403).json({ error: "Unauthorized: No business selected" });
+  }
+  next();
+};
 
 /**
  * Middleware to check role-based access for Business Owners

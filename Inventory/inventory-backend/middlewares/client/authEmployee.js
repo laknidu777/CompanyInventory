@@ -3,7 +3,8 @@ import dotenv from "dotenv";
 import path from "path";
 
 dotenv.config({ path: path.resolve(process.cwd(), ".env") });
-const JWT_SECRET = process.env.JWT_SECRET_CLIENT;
+
+const EMPLOYEE_JWT_SECRET = process.env.EMPLOYEE_JWT_SECRET; // ✅ Use the correct secret
 
 export const authenticateEmployee = (req, res, next) => {
   const authHeader = req.header("Authorization");
@@ -15,13 +16,12 @@ export const authenticateEmployee = (req, res, next) => {
   const token = authHeader.split(" ")[1];
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, EMPLOYEE_JWT_SECRET); // ✅ Verify employee token
     
-    // ✅ Restrict access to the employee's own business
     req.user = {
       emp_id: decoded.emp_id,
       emp_role: decoded.emp_role,
-      business_id: decoded.business_id,
+      assigned_business_id: decoded.assigned_business_id, // ✅ Ensure proper assignment
     };
 
     next();

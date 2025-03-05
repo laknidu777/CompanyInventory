@@ -2,6 +2,7 @@ import BusinessOwner from "../../models/client/businessowner.js";
 import jwt from "jsonwebtoken"; 
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
+import Business from "../../models/client/business.js";
 
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET_CLIENT;
@@ -79,5 +80,37 @@ export const businessOwnerLogin = async (req, res) => {
     console.error("Login error:", error);
     res.status(500).json({ error: "Internal server error" });
   }
+};
+//Business Owner Selects a Business
+export const selectBusiness = async (req, res) => {
+    try {
+        const { business_id } = req.body;
+        const bo_id = req.user.bo_id; // Extracted from the token
+
+        // Check if business belongs to the business owner
+        const business = await Business.findOne({ where: { id: business_id, owner_id: bo_id } });
+
+        if (!business) {
+            return res.status(403).json({ error: "Unauthorized: Business not found or not owned by you" });
+        }
+
+        // Generate new token with selected business_id
+        const newToken = jwt.sign(
+            {
+                bo_id,
+                bo_email: req.user.bo_email,
+                bo_role: "Super Admin",
+                business_id, // Include selected business
+                isBusinessOwner: true,
+            },
+            JWT_SECRET,
+            { expiresIn: "1h" }
+        );
+
+        res.json({ message: "Business selected successfully", token: newToken });
+    } catch (error) {
+        console.error("Business selection error:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
 };
 

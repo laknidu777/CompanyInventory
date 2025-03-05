@@ -62,8 +62,9 @@ Employee.init(
 // Establish the relationship between BusinessOwner and Employee
 BusinessOwner.hasMany(Employee, { foreignKey: "bo_id", onDelete: "CASCADE" });
 Employee.belongsTo(BusinessOwner, { foreignKey: "bo_id" });
-Business.hasMany(Employee, { foreignKey: "business_id", onDelete: "CASCADE" });
-Employee.belongsTo(Business, { foreignKey: "business_id" });
+Business.hasMany(Employee, { foreignKey: "assigned_business_id", onDelete: "CASCADE" });
+Employee.belongsTo(Business, { foreignKey: "assigned_business_id" });
+
 
 
 export default Employee;

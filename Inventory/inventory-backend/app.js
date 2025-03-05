@@ -3,10 +3,14 @@ import cors from "cors";
 import { inventoryDB, monitoringDB } from "./db.js"; 
 
 // Import Routes
+//client side routes
 import businessOwnerRoutes from "./routes/client/businessOwners.js";
-import bussiness_employeeRoutes from "./routes/client/employeeRoutes.js";
+import businessOwnerEmployeeRoutes from "./routes/client/bussinessOwnerEmployeeRoutes.js";
+import employeeClientRoutes from "./routes/client/employeeRoutes.js";
+//monitoring side routes
 import employeeRoutes from "./routes/monitoring/employeeRoutes.js";
 import employeeAuthRoutes from "./routes/monitoring/employeeAuthRoutes.js";
+
 
 const app = express();
 app.use(cors());
@@ -14,13 +18,15 @@ app.use(express.json());
 
 // Routes
 //Monitoring Side Routes
-app.use("/api/employees/auth", employeeAuthRoutes);
-app.use("/api/employees", employeeRoutes);
+app.use("/api/monitoring/employees/auth", employeeAuthRoutes);
+app.use("/api/monitoring/employees", employeeRoutes);
 
 //Client Side Routes
+app.use("/api/employees", employeeClientRoutes);
 app.use("/api/business-owners", businessOwnerRoutes);
-app.use("/api/business-owners/employees", bussiness_employeeRoutes);
+// Business Owners Managing Employees
 
+app.use("/api/business-owners", businessOwnerEmployeeRoutes);
 // Ensure both databases are connected before starting the server
 (async () => {
   try {
