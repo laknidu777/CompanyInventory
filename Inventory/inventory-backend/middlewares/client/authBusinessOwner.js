@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import path from "path";
+import Business from "../../models/client/business.js";
 
 dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 //dotenv.config();
@@ -31,6 +32,26 @@ export const authenticateBusinessOwner = (req, res, next) => {
       return res.status(403).json({ error: "Invalid token" });
   }
 };
+
+export const validateBusinessAccess = async (req, res, next) => {
+  try {
+    const { business_id } = req.params;
+    const user_id = req.user.bo_id; // Get Business Owner ID from token
+
+    // Check if the business belongs to the logged-in user
+    const business = await Business.findOne({ where: { id: business_id, owner_id: user_id } });
+
+    if (!business) {
+      return res.status(403).json({ error: "Unauthorized access to this business" });
+    }
+
+    next(); // Proceed if valid
+  } catch (error) {
+    console.error("Business access validation error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 
 // Middleware to check if business_id exists after selection
 export const validateBusinessSelection = (req, res, next) => {

@@ -35,7 +35,7 @@ Employee.init(
     },
     bo_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: BusinessOwner,
         key: "bo_id",
@@ -51,6 +51,15 @@ Employee.init(
       },
       onDelete: "CASCADE",
     },
+    createdEmpId: {
+      type: DataTypes.INTEGER,
+      allowNull: true, // Ensure an employee must be created by another employee
+      references: {
+        model: Employee,  // Reference the Employee model itself
+        key: "emp_id",
+      },
+      onDelete: "CASCADE",
+    },    
   },
   {
     sequelize: inventoryDB,

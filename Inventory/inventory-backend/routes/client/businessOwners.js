@@ -4,7 +4,6 @@ import { createBusinessOwner,
          selectBusiness } from "../../controllers/client/businessOwnerController.js";
 import { authenticateBusinessOwner } from "../../middlewares/client/authBusinessOwner.js";
 
-
 const router = express.Router();
 
 router.post("/signup", createBusinessOwner);
