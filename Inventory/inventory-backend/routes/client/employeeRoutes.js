@@ -14,6 +14,6 @@ router.post("/login", employeeLogin);
 
 // ✅ Employees Can View & Edit Their Own Profile
 router.get("/profile", authenticateEmployee, getEmployeeProfile);
-router.put("/profile", authenticateEmployee, updateEmployeeSelf);
+router.put("/profile", authenticateEmployee, updateEmployeeSelf);//
 
 export default router;
