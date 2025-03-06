@@ -25,6 +25,11 @@ Business.init(
       },
       onDelete: "CASCADE",
     },
+    business_type: {
+      type: DataTypes.ENUM("Buying & Selling", "Manufacturing", "Renting"),
+      allowNull: false,
+      //defaultValue: "Buying & Selling",
+    },    
     created_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW, // ✅ Automatically set timestamp

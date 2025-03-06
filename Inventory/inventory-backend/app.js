@@ -7,6 +7,7 @@ import { inventoryDB, monitoringDB } from "./db.js";
 import businessOwnerRoutes from "./routes/client/businessOwners.js";
 import businessOwnerEmployeeRoutes from "./routes/client/bussinessOwnerEmployeeRoutes.js";
 import employeeClientRoutes from "./routes/client/employeeRoutes.js";
+import manufacturingRoutes from "./routes/client/manufacturingRoutes.js";
 //monitoring side routes
 import employeeRoutes from "./routes/monitoring/employeeRoutes.js";
 import employeeAuthRoutes from "./routes/monitoring/employeeAuthRoutes.js";
