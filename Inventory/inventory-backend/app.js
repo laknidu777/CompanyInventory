@@ -25,6 +25,7 @@ app.use("/api/monitoring/employees", employeeRoutes);
 //Client Side Routes
 app.use("/api/employees", employeeClientRoutes);
 app.use("/api/business-owners", businessOwnerRoutes);
+app.use("/api/manufacturing", manufacturingRoutes);
 // Business Owners Managing Employees
 
 app.use("/api/business-owners", businessOwnerEmployeeRoutes);
