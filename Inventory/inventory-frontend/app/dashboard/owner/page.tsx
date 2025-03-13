@@ -21,7 +21,9 @@ export default function BusinessDashboard() {
             <p className="text-gray-500 text-sm">Last accessed: Today</p>
             <p className="text-gray-500 text-sm">12 active users</p>
             <div className="flex justify-between mt-4">
-              <button className="bg-black text-white px-4 py-2 rounded-lg">Manage</button>
+            <Link href="/dashboard/owner/dashboard">
+                <button className="bg-black text-white px-4 py-2 rounded-lg">Manage</button>
+              </Link>
               <button className="border border-gray-400 text-black px-4 py-2 rounded-lg">Reports</button>
             </div>
           </div>
@@ -31,7 +33,9 @@ export default function BusinessDashboard() {
             <p className="text-gray-500 text-sm">Last accessed: Yesterday</p>
             <p className="text-gray-500 text-sm">28 active users</p>
             <div className="flex justify-between mt-4">
-              <button className="bg-black text-white px-4 py-2 rounded-lg">Manage</button>
+            <Link href="/dashboard/owner/dashboard">
+                <button className="bg-black text-white px-4 py-2 rounded-lg">Manage</button>
+              </Link>
               <button className="border border-gray-400 text-black px-4 py-2 rounded-lg">Reports</button>
             </div>
           </div>
