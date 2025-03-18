@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function BusinessOwnerHeader() {
   return (
-    <header className="bg-gray-800 p-4 flex justify-between items-center">
+    <header className="bg-gray-800 p-4 flex justify-between items-center ">
       <div className="text-xl font-bold">ERM SYSTEM</div>
       <nav className="flex space-x-6">
         <Link href="/dashboard" className="text-white hover:text-black">Dashboard</Link>
