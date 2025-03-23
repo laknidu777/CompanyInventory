@@ -77,57 +77,71 @@ export const createEmployeeByEmployee = async (req, res) => {
   }
 };
 
-/**
- * ✅ Business Owner Creates an Employee
- */
+// //**
+// * Create Employee by Business Owner
+// */
 export const createEmployeeByBusinessOwner = async (req, res) => {
   try {
-    const { emp_name, emp_email, emp_role, emp_password } = req.body;
     const { business_id } = req.params;
-    const bo_id = req.user.bo_id;  // ✅ Business Owner ID
+    const { emp_name, emp_email, emp_password, emp_role, designation } = req.body;
 
-    const existingEmployee = await Employee.findOne({ where: { emp_email } });
-    if (existingEmployee) {
-      return res.status(400).json({ error: "Employee with this email already exists" });
-    }
+    // Ensure the business exists
+    const business = await Business.findByPk(business_id);
+    if (!business) return res.status(404).json({ error: "Business not found" });
 
-
-    if (!bo_id) {
-      return res.status(400).json({ error: "Invalid request: Missing Business Owner ID" });
-    }
-
+    // Hash the password before storing
     const hashedPassword = await bcrypt.hash(emp_password, 10);
 
-    const employee = await Employee.create({
+    const newEmployee = await Employee.create({
       emp_name,
       emp_email,
-      emp_role,
       emp_password: hashedPassword,
+      emp_role,
+      designation,
       assigned_business_id: business_id,
-      createdEmpId: -bo_id, // ✅ Negative value to indicate Business Owner
-      bo_id: bo_id, // ✅ Assign Business Owner ID
+      created_by: req.user.emp_id, // Track who created the employee
     });
 
-    res.status(201).json({ message: "Employee created successfully", employee });
-  } catch (err) {
-    console.error("Error creating employee:", err);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(201).json({ message: "Employee created successfully", employee: newEmployee });
+  } catch (error) {
+    console.error("Error creating employee:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 export const getEmployeesByBusiness = async (req, res) => {
   try {
     const { business_id } = req.params;
+    const bo_id = req.user.bo_id; // Business Owner ID from token
+    const { page = 1, limit = 5 } = req.query; // ✅ Default to page 1, 5 employees per page
 
-    const employees = await Employee.findAll({
+    // Ensure Business Owner owns this business
+    const business = await Business.findOne({ where: { id: business_id, owner_id: bo_id } });
+
+    if (!business) {
+      return res.status(403).json({ error: "Unauthorized: You do not own this business" });
+    }
+
+    // Fetch paginated employees
+    const employees = await Employee.findAndCountAll({
       where: { assigned_business_id: business_id },
-      attributes: ["emp_id", "emp_name", "emp_email", "emp_role", "assigned_business_id"],
+      attributes: ["emp_id", "emp_name", "emp_email", "emp_role", "designation"],
+      limit: parseInt(limit), // Number of results per page
+      offset: (parseInt(page) - 1) * parseInt(limit), // Skip previous pages
     });
 
-    res.json(employees);
+    res.json({
+      employees: employees.rows, 
+      totalEmployees: employees.count,
+      totalPages: Math.ceil(employees.count / limit),
+      currentPage: parseInt(page)
+    });
   } catch (err) {
+    console.error("Error fetching employees:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+
 //get employees by employees who has specific user roles.
 export const getEmployeesByBusinessEmployees = async (req, res) => {
   try {

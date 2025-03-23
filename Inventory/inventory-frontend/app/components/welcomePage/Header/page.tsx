@@ -1,28 +1,31 @@
-"use client";
-import { useRouter } from "next/navigation";
+'use client';
+import { useRouter, usePathname } from "next/navigation";
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname(); // Get current page route
 
   return (
-    <header className="w-full bg-[#1e293b] py-0 px-0 flex justify-between items-center h-20">
+    <header className="w-full bg-gray-900 py-4 px-6 flex items-center">
       {/* Title */}
-      <h1 className="text-white text-2xl font-bold ml-12">ERM SYSTEM</h1>
+      <h1 className="text-white text-2xl font-bold">ERM SYSTEM</h1>
 
-      {/* Navigation */}
-      <nav className="flex space-x-6 text-[#cbd5e1]">
+      {/* Navigation (Centered) */}
+      <nav className="flex-grow flex justify-center space-x-8 text-gray-400">
         <span className="cursor-pointer hover:text-white">Home</span>
         <span className="cursor-pointer hover:text-white">Features</span>
         <span className="cursor-pointer hover:text-white">Pricing</span>
       </nav>
 
-      {/* Login Button */}
-      <button
-        onClick={() => router.push("/auth/login")}
-        className="bg-black text-white px-6 py-2 rounded mr-12 h-10 hover:bg-gray-700"
-      >
-        Login
-      </button>
+      {/* Show Login button only if NOT on the Login page */}
+      {pathname !== "/auth/login" && (
+        <button
+          onClick={() => router.push("/auth/login")}
+          className="bg-black text-white px-5 py-2 rounded-lg hover:bg-gray-700 transition duration-300"
+        >
+          Login
+        </button>
+      )}
     </header>
   );
 }

@@ -9,29 +9,27 @@ dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 // Ensure correct JWT secret key from .env
 const JWT_SECRET = process.env.JWT_SECRET_CLIENT;
 
-/**
- * Middleware to authenticate Business Owners
- */
 export const authenticateBusinessOwner = (req, res, next) => {
-  const authHeader = req.header("Authorization");
+  const token = req.cookies.accessToken; // Read token from cookies
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      console.log("❌ No token or incorrect format received.");
-      return res.status(401).json({ error: "Invalid or missing token format." });
+  if (!token) {
+      return res.status(401).json({ error: "Unauthorized: No token provided" });
   }
-
-  const token = authHeader.split(" ")[1];
-  //console.log("🔹 Received Token:", token);
 
   try {
-      const decoded = jwt.verify(token, JWT_SECRET);
+      const decoded = jwt.verify(token,JWT_SECRET);
       req.user = decoded;
+      if (!req.user.bo_id) {
+        return res.status(403).json({ error: "Invalid token: Missing Business Owner ID" });
+    }
       next();
   } catch (err) {
-      console.error("❌ JWT Verification Failed:", err);
-      return res.status(403).json({ error: "Invalid token" });
+      console.error("JWT Verification Failed:", err);
+      return res.status(403).json({ error: "Invalid or expired token" });
   }
 };
+
+
 
 export const validateBusinessAccess = async (req, res, next) => {
   try {

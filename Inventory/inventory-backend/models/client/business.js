@@ -29,7 +29,27 @@ Business.init(
       type: DataTypes.ENUM("Buying & Selling", "Manufacturing", "Renting"),
       allowNull: false,
       //defaultValue: "Buying & Selling",
-    },    
+    },  
+    registration_number: {
+      type: DataTypes.STRING, // ✅ New column
+      allowNull: true, // Can be optional
+    },
+    tax_id: {
+        type: DataTypes.STRING, // ✅ New column
+        allowNull: true, // Can be optional
+    },
+    email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    phone: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    address: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },  
     created_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW, // ✅ Automatically set timestamp

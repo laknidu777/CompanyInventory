@@ -42,6 +42,10 @@ Employee.init(
       },
       onDelete: "CASCADE",
     },
+    designation: {  // ✅ New column
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     assigned_business_id: {  // ✅ Renamed from business_id
       type: DataTypes.INTEGER,
       allowNull: false,
