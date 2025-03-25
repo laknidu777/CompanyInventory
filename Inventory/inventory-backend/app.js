@@ -11,6 +11,8 @@ import manufacturingRoutes from "./routes/client/manufacturingRoutes.js";
 import employeeRoutes from "./routes/monitoring/employeeRoutes.js";
 import employeeAuthRoutes from "./routes/monitoring/employeeAuthRoutes.js";
 import businessRoutes from "./routes/client/businessRoutes.js";
+import rolePermissionRoutes from "./routes/client/rolePermissionRoutes.js";
+import inventoryRoutes from './routes/client/inventoryRoutes.js';
 
 const app = express();
 
@@ -31,6 +33,11 @@ app.use("/api/business-owners", businessOwnerRoutes);
 app.use("/api/manufacturing", manufacturingRoutes);
 app.use("/api/business-owners", businessOwnerEmployeeRoutes);
 app.use("/api/business-owners/business", businessRoutes); 
+app.use("/api/businesses", rolePermissionRoutes);
+
+
+app.use('/api/businesses', inventoryRoutes);
+
 
 // Ensure both databases are connected before starting the server
 (async () => {

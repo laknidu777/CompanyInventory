@@ -3,7 +3,7 @@ import {
   getEmployeesByBusiness, 
   createEmployeeByBusinessOwner, 
   updateEmployee, 
-  deleteEmployee 
+  deleteEmployee ,getEmployeeById
 } from "../../controllers/client/employeeController.js";
 
 import { authenticateBusinessOwner, validateBusinessAccess} from "../../middlewares/client/authBusinessOwner.js";
@@ -31,6 +31,11 @@ router.put("/employees/:emp_id",
   authenticateBusinessOwner,
   authorizeRoles("Super Admin", "Admin", "HR", "Manager"),
   updateEmployee
+);
+router.get("/employees/:emp_id",
+  authenticateBusinessOwner,
+  authorizeRoles("Super Admin", "Admin", "HR", "Manager", "Viewer"),
+  getEmployeeById
 );
 // Business Owner Delete Employee
 router.delete("/employees/:emp_id",

@@ -18,4 +18,7 @@ router.get("/my-businesses", authenticateBusinessOwner, getBusinessOwnerBusiness
 router.post("/create-business", authenticateBusinessOwner, createBusiness);
 router.post("/select-business", authenticateBusinessOwner, selectBusiness);
 
+
+
+
 export default router;

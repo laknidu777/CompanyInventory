@@ -10,6 +10,7 @@ import {
 } from "../../controllers/client/employeeController.js";
 import { authenticateEmployee } from "../../middlewares/client/authEmployee.js";
 import { authorizeRoles } from "../../middlewares/client/roleMiddleware.js"
+import { checkPermission } from "../../middlewares/client/checkPermission.js";
 
 const router = express.Router();
 // ✅ Employee Login Route
@@ -20,22 +21,22 @@ router.put("/profile", authenticateEmployee, updateEmployeeSelf);
 // ✅ Role-Based Employee Management (New Routes)
 router.get("/manage", 
         authenticateEmployee, 
-        authorizeRoles("Super Admin", "Admin", "HR", "Manager", "Viewer"),
+        checkPermission("Employees", "Read"),
         getEmployeesByBusinessEmployees
       );
 router.post("/manage", 
         authenticateEmployee, 
-        authorizeRoles("Super Admin", "Admin", "HR"),
+        checkPermission("Employees", "Create"),
         createEmployeeByEmployee
       );
 router.put("/manage/:emp_id", 
         authenticateEmployee, 
-        authorizeRoles("Super Admin", "Admin", "HR"),
+        checkPermission("Employees", "Update"),
         updateEmployeeByEmployee
       );
 router.delete("/manage/:emp_id", 
         authenticateEmployee, 
-        authorizeRoles("Super Admin", "Admin","HR"),
+        checkPermission("Employees", "Delete"),
         deleteEmployeeByEmployee
       );
 export default router;

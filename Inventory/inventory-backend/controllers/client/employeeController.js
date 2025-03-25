@@ -141,7 +141,36 @@ export const getEmployeesByBusiness = async (req, res) => {
   }
 };
 
+export const getEmployeeById = async (req, res) => {
+  try {
+    const { emp_id } = req.params;
+    const bo_id = req.user.bo_id;
 
+    const employee = await Employee.findOne({ where: { emp_id } });
+    if (!employee) {
+      return res.status(404).json({ error: "Employee not found" });
+    }
+
+    const business = await Business.findOne({
+      where: { id: employee.assigned_business_id, owner_id: bo_id },
+    });
+
+    if (!business) {
+      return res.status(403).json({ error: "Unauthorized access to this employee" });
+    }
+
+    res.json({
+      emp_id: employee.emp_id,
+      emp_name: employee.emp_name,
+      emp_email: employee.emp_email,
+      emp_role: employee.emp_role,
+      designation: employee.designation,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 //get employees by employees who has specific user roles.
 export const getEmployeesByBusinessEmployees = async (req, res) => {
   try {

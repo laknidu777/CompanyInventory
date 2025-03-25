@@ -1,61 +1,50 @@
 'use client';
-import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { API_BASE_URL } from "../../../../../utils/config";
+import { ToastContainer, toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 const EditEmployee = () => {
   const router = useRouter();
-  const { id, emp_id } = useParams(); // Extract Business ID & Employee ID
+  const { id, emp_id } = useParams();
 
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    role: "",
-    password: "",
+    emp_id: "",
+    emp_name: "",
+    emp_email: "",
+    emp_role: "",
   });
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchEmployee = async () => {
+    const fetchEmployeeData = async () => {
       try {
-        console.log("Fetching employee data for ID:", emp_id);
-  
-        const response = await fetch(`${API_BASE_URL}/api/employees/${emp_id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/business-owners/employees/${emp_id}`, {
           method: "GET",
           credentials: "include",
         });
-  
-        console.log("API Response Status:", response.status);
-  
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error("API Error Response:", errorData);
-          throw new Error(errorData.error || "Failed to fetch employee data");
-        }
-  
+
+        if (!response.ok) throw new Error("Failed to fetch employee data");
+
         const data = await response.json();
-        console.log("Fetched Employee Data:", data);
-  
         setFormData({
-          name: data.emp_name || "",
-          email: data.emp_email || "",
-          role: data.emp_role || "",
-          password: "",
+          emp_id: data.emp_id,
+          emp_name: data.emp_name,
+          emp_email: data.emp_email,
+          emp_role: data.emp_role,
         });
-  
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching employee:", error);
-        setError("Failed to load employee details.");
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load employee data.");
+      } finally {
         setLoading(false);
       }
     };
-  
-    if (emp_id) {
-      fetchEmployee();
-    }
+
+    if (emp_id) fetchEmployeeData();
   }, [emp_id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,100 +55,101 @@ const EditEmployee = () => {
     e.preventDefault();
 
     try {
-      const updatedData: any = {
-        emp_name: formData.name,
-        emp_email: formData.email,
-        emp_role: formData.role,
-      };
-
-      // Only send password if it's changed
-      if (formData.password) {
-        updatedData.emp_password = formData.password;
-      }
-
       const response = await fetch(`${API_BASE_URL}/api/business-owners/employees/${emp_id}`, {
         method: "PUT",
-        credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedData),
+        credentials: "include",
+        body: JSON.stringify({
+          emp_name: formData.emp_name,
+          emp_email: formData.emp_email,
+          emp_role: formData.emp_role,
+        }),
       });
 
-      if (!response.ok) throw new Error("Failed to update employee");
+      if (!response.ok) throw new Error("Update failed");
 
-      router.push(`/dashboard/employee/${id}`);
+      toast.success("✅ Employee updated successfully!", {
+        position: "top-right",
+        autoClose: 1200,
+      });
+
+      setTimeout(() => {
+        router.push(`/dashboard/employee/${id}`);
+      }, 1300); // slight buffer after toast
     } catch (error) {
-      console.error("Error updating employee:", error);
-      setError("Failed to update employee.");
+      console.error(error);
+      toast.error("❌ Failed to update employee.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white p-8 shadow-lg rounded-lg w-full max-w-lg">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">Edit Employee</h1>
+  if (loading) return <p className="p-6 text-gray-600">Loading employee data...</p>;
+  if (error) return <p className="p-6 text-red-600">{error}</p>;
 
-        {loading ? (
-          <p className="text-center text-gray-700">Loading employee details...</p>
-        ) : error ? (
-          <p className="text-center text-red-500">{error}</p>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Name</label>
+  return (
+    <div className="min-h-screen flex flex-col bg-white">
+      {/* Toast container */}
+      <ToastContainer />
+
+      <div className="flex flex-1 text-gray-600">
+        <main className="flex-1 p-6 overflow-auto">
+          <h1 className="text-2xl font-bold text-gray-900 mb-6">Edit Employee</h1>
+
+          <form onSubmit={handleSubmit} className="bg-gray-100 p-6 rounded-md shadow-md max-w-lg">
+            <label className="block mb-3">
+              Employee ID:
               <input
                 type="text"
-                name="name"
-                value={formData.name}
+                name="emp_id"
+                value={formData.emp_id}
+                disabled
+                className="w-full p-2 border border-gray-300 rounded-md bg-gray-200"
+              />
+            </label>
+
+            <label className="block mb-3">
+              Name:
+              <input
+                type="text"
+                name="emp_name"
+                value={formData.emp_name}
                 onChange={handleChange}
                 required
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
+                className="w-full p-2 border border-gray-300 rounded-md"
               />
-            </div>
+            </label>
 
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Email</label>
+            <label className="block mb-3">
+              Email:
               <input
                 type="email"
-                name="email"
-                value={formData.email}
+                name="emp_email"
+                value={formData.emp_email}
                 onChange={handleChange}
                 required
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
+                className="w-full p-2 border border-gray-300 rounded-md"
               />
-            </div>
+            </label>
 
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Role</label>
+            <label className="block mb-3">
+              Role:
               <input
                 type="text"
-                name="role"
-                value={formData.role}
+                name="emp_role"
+                value={formData.emp_role}
                 onChange={handleChange}
                 required
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
+                className="w-full p-2 border border-gray-300 rounded-md"
               />
-            </div>
+            </label>
 
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Password (Optional)</label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Enter new password if changing"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition duration-300"
-            >
+            <button type="submit" className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800">
               Update Employee
             </button>
           </form>
-        )}
+        </main>
       </div>
     </div>
   );

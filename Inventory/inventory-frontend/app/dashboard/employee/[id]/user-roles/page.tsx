@@ -1,18 +1,25 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import BusinessOwnerHeader from '../../../components/BusinessOwner/Header/page';
-import Sidebar from '../../../components/sidebar/page';
-import Footer from '../../../components/welcomePage/Footer/page';
+import { useEffect, useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { API_BASE_URL } from "../../../../utils/config";
+
+type Permissions = {
+  [role: string]: {
+    [module: string]: {
+      [permission: string]: boolean;
+    };
+  };
+};
 
 const AccessControl = () => {
   const router = useRouter();
+  const params = useParams();
+  const businessId = Number(params.id);
 
-  // Define all available roles
   const roles = ['Admin', 'Manager', 'HR', 'Editor'];
-  
-  // Define all modules that can have permissions assigned
   const modules = [
     'Employees',
     'Inventory',
@@ -23,28 +30,67 @@ const AccessControl = () => {
     'Reports',
     'Business Profile'
   ];
-
-  // Define all permission types
   const permissionTypes = ['Create', 'Read', 'Update', 'Delete'];
-  
-  // Initialize permissions state - structure: { [role]: { [module]: { [permission]: boolean } } }
-  const [permissions, setPermissions] = useState<{ [role: string]: { [module: string]: { [permission: string]: boolean } } }>(() => {
-    const initialState: { [role: string]: { [module: string]: { [permission: string]: boolean } } } = {};
-    
+
+  const getInitialPermissions = (): Permissions => {
+    const initial: Permissions = {};
     roles.forEach(role => {
-      initialState[role] = {};
+      initial[role] = {};
       modules.forEach(module => {
-        initialState[role][module] = {};
+        initial[role][module] = {};
         permissionTypes.forEach(permission => {
-          initialState[role][module][permission] = false;
+          initial[role][module][permission] = false;
         });
       });
     });
-    
-    return initialState;
-  });
+    return initial;
+  };
 
-  // Function to handle changes to permissions
+  const [permissions, setPermissions] = useState<Permissions>(getInitialPermissions);
+  const [expandedRoles, setExpandedRoles] = useState<{ [key: string]: boolean }>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/businesses/${businessId}/permissions`, {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        if (!res.ok) throw new Error('Failed to fetch permissions');
+        const data = await res.json();
+
+        if (data.permissions) {
+          const fullPermissions = getInitialPermissions();
+
+          Object.entries(data.permissions).forEach(([role, modulesObj]) => {
+            if (!fullPermissions[role]) return;
+
+            Object.entries(modulesObj as { [key: string]: { [key: string]: boolean } }).forEach(([module, perms]) => {
+              if (!fullPermissions[role][module]) return;
+
+              Object.entries(perms).forEach(([permType, value]) => {
+                fullPermissions[role][module][permType] = value;
+              });
+            });
+          });
+
+          setPermissions(fullPermissions);
+        }
+      } catch (err: any) {
+        console.error("Permission fetch error:", err);
+        setError("Could not load permissions");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (businessId) fetchPermissions();
+  }, [businessId]);
+
   const togglePermission = (role: string, module: string, permission: string) => {
     setPermissions(prev => ({
       ...prev,
@@ -58,52 +104,35 @@ const AccessControl = () => {
     }));
   };
 
-  // Function to select/deselect all permissions for a specific role and module
   const toggleAllPermissions = (role: string, module: string, value: boolean) => {
     setPermissions(prev => {
-      const updatedRole = { ...prev[role] };
-      updatedRole[module] = {};
-      
-      permissionTypes.forEach(permission => {
-        updatedRole[module][permission] = value;
+      const updated = { ...prev[role] };
+      updated[module] = {};
+      permissionTypes.forEach(p => {
+        updated[module][p] = value;
       });
-      
       return {
         ...prev,
-        [role]: updatedRole
+        [role]: updated
       };
     });
   };
 
-  // Function to select/deselect a specific permission across all modules for a role
   const togglePermissionForAllModules = (role: string, permission: string, value: boolean) => {
     setPermissions(prev => {
-      const updatedRole = { ...prev[role] };
-      
+      const updated = { ...prev[role] };
       modules.forEach(module => {
-        updatedRole[module] = {
-          ...updatedRole[module],
+        updated[module] = {
+          ...updated[module],
           [permission]: value
         };
       });
-      
       return {
         ...prev,
-        [role]: updatedRole
+        [role]: updated
       };
     });
   };
-
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Updated Access Control:', permissions);
-    // TODO: Send updated access settings to the backend/API
-    router.push('/admin-dashboard');
-  };
-
-  // Show/hide permission matrix for each role
-  const [expandedRoles, setExpandedRoles] = useState<{ [key: string]: boolean }>({});
 
   const toggleRoleExpansion = (role: string) => {
     setExpandedRoles(prev => ({
@@ -112,33 +141,64 @@ const AccessControl = () => {
     }));
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/businesses/${businessId}/permissions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ permissions }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        toast.error(err.message || "Failed to save permissions");
+        return;
+      }
+
+      toast.success("Changes saved successfully");
+      // Stay on the same page
+    } catch (err: any) {
+      console.error("Permission save error:", err);
+      toast.error("Error saving permissions");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) return <div className="p-6">Loading permissions...</div>;
+  if (error) return <div className="p-6 text-red-600">Error: {error}</div>;
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <BusinessOwnerHeader />
+      <ToastContainer />
       <div className="flex flex-1 text-gray-600">
-        <Sidebar />
         <main className="flex-1 p-6">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-900">Access Control Management</h1>
-            <button 
-              type="button" 
-              onClick={() => router.push('/admin-dashboard')}
+            <button
+              type="button"
+              onClick={() => router.push('/dashboard')}
               className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
             >
               Back to Dashboard
             </button>
           </div>
-          
+
           <div className="bg-gray-50 p-6 rounded-lg shadow-md mb-6">
             <p className="text-gray-700 mb-4">
               As Super Admin, you can configure which roles have access to different modules and what actions they can perform.
             </p>
           </div>
-          
+
           <form onSubmit={handleSubmit}>
             {roles.map(role => (
               <div key={role} className="mb-6 bg-white border border-gray-200 rounded-lg shadow-sm">
-                <div 
+                <div
                   className="p-4 bg-gray-100 flex justify-between items-center cursor-pointer"
                   onClick={() => toggleRoleExpansion(role)}
                 >
@@ -147,7 +207,7 @@ const AccessControl = () => {
                     {expandedRoles[role] ? '▼' : '▶'}
                   </span>
                 </div>
-                
+
                 {expandedRoles[role] && (
                   <div className="p-4">
                     <div className="overflow-x-auto">
@@ -159,18 +219,17 @@ const AccessControl = () => {
                               <th key={permission} className="border border-gray-300 p-2 text-center">
                                 <div className="flex flex-col items-center">
                                   <span>{permission}</span>
-                                  <div className="mt-2">
-                                    <label className="inline-flex items-center">
-                                      <input
-                                        type="checkbox"
-                                        className="form-checkbox h-4 w-4 text-blue-600"
-                                        onChange={(e) => togglePermissionForAllModules(role, permission, e.target.checked)}
-                                        checked={modules.every(module => permissions[role][module][permission])}
-                                        title={`Select/deselect ${permission} for all modules`}
-                                      />
-                                      <span className="ml-1 text-xs">All</span>
-                                    </label>
-                                  </div>
+                                  <label className="inline-flex items-center mt-1">
+                                    <input
+                                      type="checkbox"
+                                      className="form-checkbox h-4 w-4 text-blue-600"
+                                      checked={modules.every(module => permissions[role][module][permission])}
+                                      onChange={(e) =>
+                                        togglePermissionForAllModules(role, permission, e.target.checked)
+                                      }
+                                    />
+                                    <span className="ml-1 text-xs">All</span>
+                                  </label>
                                 </div>
                               </th>
                             ))}
@@ -209,7 +268,7 @@ const AccessControl = () => {
                 )}
               </div>
             ))}
-            
+
             <div className="flex justify-end mt-6 space-x-4">
               <button
                 type="button"
@@ -220,15 +279,15 @@ const AccessControl = () => {
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-black text-white rounded-md hover:bg-gray-800"
+                disabled={saving}
+                className={`px-6 py-2 text-white rounded-md ${saving ? 'bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-gray-800'}`}
               >
-                Save Changes
+                {saving ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </form>
         </main>
       </div>
-      <Footer />
     </div>
   );
 };
