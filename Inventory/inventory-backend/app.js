@@ -7,12 +7,12 @@ import { inventoryDB, monitoringDB } from "./db.js";
 import businessOwnerRoutes from "./routes/client/businessOwners.js";
 import businessOwnerEmployeeRoutes from "./routes/client/bussinessOwnerEmployeeRoutes.js";
 import employeeClientRoutes from "./routes/client/employeeRoutes.js";
-import manufacturingRoutes from "./routes/client/manufacturingRoutes.js";
 import employeeRoutes from "./routes/monitoring/employeeRoutes.js";
 import employeeAuthRoutes from "./routes/monitoring/employeeAuthRoutes.js";
 import businessRoutes from "./routes/client/businessRoutes.js";
 import rolePermissionRoutes from "./routes/client/rolePermissionRoutes.js";
 import inventoryRoutes from './routes/client/inventoryRoutes.js';
+import pipelineRoutes from './routes/client/pipelineRoutes.js';
 
 const app = express();
 
@@ -30,10 +30,10 @@ app.use("/api/monitoring/employees/auth", employeeAuthRoutes);
 app.use("/api/monitoring/employees", employeeRoutes);
 app.use("/api/employees", employeeClientRoutes);
 app.use("/api/business-owners", businessOwnerRoutes);
-app.use("/api/manufacturing", manufacturingRoutes);
 app.use("/api/business-owners", businessOwnerEmployeeRoutes);
 app.use("/api/business-owners/business", businessRoutes); 
 app.use("/api/businesses", rolePermissionRoutes);
+app.use('/api', pipelineRoutes);
 
 
 app.use('/api/businesses', inventoryRoutes);
