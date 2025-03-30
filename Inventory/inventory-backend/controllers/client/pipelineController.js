@@ -1,6 +1,6 @@
 // controllers/pipelineController.js
 import Pipeline from "../../models/client/Pipeline.js";
-import PipelineStage from "../../models/client/pipelineStage.js";
+import PipelineStage from "../../models/client/PipelineStage.js";
 import { checkPermission as hasPermission } from "../../middlewares/client/checkPermission.js";
 
 // ✅ Create new pipeline (owner only)

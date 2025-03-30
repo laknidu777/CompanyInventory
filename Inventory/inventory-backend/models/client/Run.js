@@ -1,6 +1,7 @@
 import { DataTypes, Model } from "sequelize";
 import { inventoryDB } from "../../db.js";
 
+
 class Run extends Model {}
 
 Run.init(
@@ -11,7 +12,7 @@ Run.init(
       defaultValue: DataTypes.UUIDV4, // ✅ Important!
     },
     pipeline_id: {
-      type: DataTypes.UUID, // ✅ Use correct DB column name
+      type: DataTypes.UUID, // ✅ Corrected
       allowNull: false,
     },
     inventory_item_id: { // ✅ Use correct DB column name
@@ -36,5 +37,4 @@ Run.init(
     timestamps: true,
   }
 );
-
 export default Run;

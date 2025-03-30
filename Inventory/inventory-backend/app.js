@@ -13,6 +13,8 @@ import businessRoutes from "./routes/client/businessRoutes.js";
 import rolePermissionRoutes from "./routes/client/rolePermissionRoutes.js";
 import inventoryRoutes from './routes/client/inventoryRoutes.js';
 import pipelineRoutes from './routes/client/pipelineRoutes.js';
+import './models/client/associations.js'; // This will apply associations
+
 
 const app = express();
 

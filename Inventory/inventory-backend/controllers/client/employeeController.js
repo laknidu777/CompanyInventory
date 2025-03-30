@@ -2,6 +2,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Employee from "../../models/client/employee.js";
 import Business from "../../models/client/business.js";
+import { Op } from "sequelize";
+
 
 export const employeeLogin = async (req, res) => {
   try {
@@ -112,7 +114,7 @@ export const getEmployeesByBusiness = async (req, res) => {
   try {
     const { business_id } = req.params;
     const bo_id = req.user.bo_id; // Business Owner ID from token
-    const { page = 1, limit = 5 } = req.query; // ✅ Default to page 1, 5 employees per page
+    const { page = 1, limit = 10 } = req.query; // ✅ Default to page 1, 5 employees per page
 
     // Ensure Business Owner owns this business
     const business = await Business.findOne({ where: { id: business_id, owner_id: bo_id } });
@@ -371,3 +373,64 @@ export const deleteEmployeeByEmployee = async (req, res) => {
   }
 };
 
+// ✅ Get all employees for dropdown (no pagination, minimal fields)
+// export const getAllEmployeesMinimal = async (req, res) => {
+//   try {
+//     const { business_id } = req.params;
+//     const bo_id = req.user.bo_id;
+
+//     const business = await Business.findOne({
+//       where: { id: business_id, owner_id: bo_id },
+//     });
+
+//     if (!business) {
+//       return res.status(403).json({ error: "Unauthorized" });
+//     }
+
+//     const employees = await Employee.findAll({
+//       where: { assigned_business_id: business_id },
+//       attributes: ["emp_id", "emp_name"],
+//     });
+
+//     res.json({ employees });
+//   } catch (err) {
+//     console.error("Error fetching employee dropdown:", err);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// };
+// 🔍 Search employees by name or emp_id within assigned business
+// 🔍 Search employees by name or emp_id within assigned business
+export const searchEmployees = async (req, res) => {
+  try {
+    const { business_id } = req.params;
+    const { q } = req.query; // q = query string
+    const bo_id = req.user.bo_id;
+
+    if (!q) return res.status(400).json({ error: "Search term is required" });
+
+    // 🔒 Verify business ownership
+    const business = await Business.findOne({
+      where: { id: business_id, owner_id: bo_id },
+    });
+
+    if (!business) {
+      return res.status(403).json({ error: "Unauthorized access" });
+    }
+
+    const employees = await Employee.findAll({
+      where: {
+        assigned_business_id: business_id,
+        [Op.or]: [
+          { emp_name: { [Op.iLike]: `%${q}%` } }, // case-insensitive LIKE
+          { emp_id: isNaN(Number(q)) ? null : Number(q) }, // optional numeric ID match
+        ],
+      },
+      attributes: ["emp_id", "emp_name", "emp_email", "emp_role", "designation"],
+    });
+
+    res.json({ employees });
+  } catch (error) {
+    console.error("❌ Error in searchEmployees:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

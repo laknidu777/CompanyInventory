@@ -101,7 +101,7 @@ const Sidebar = ({ onCollapse }: SidebarProps) => {
     { 
       title: "Processes", 
       icon: <Workflow size={18} />, 
-      path: `/dashboard/owner/processes/${id}`,
+      path: `/dashboard/processes/${id}`,
       type: "link"
     },
     { 

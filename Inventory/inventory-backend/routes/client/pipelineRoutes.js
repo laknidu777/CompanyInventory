@@ -1,5 +1,6 @@
 import express from "express";
 import {authenticateBusinessOwner} from "../../middlewares/client/authBusinessOwner.js";
+import { getRunById } from "../../controllers/client/runPipelineController.js";
 
 import {
   createPipeline,
@@ -16,7 +17,8 @@ import {
   getPipelineRuns,
   assignEmployeeToStage,
   updateRunStageStatus,
-  getProcessLogs
+  getProcessLogs,
+  deleteRunPipeline
 } from "../../controllers/client/runPipelineController.js";
 
 const router = express.Router();
@@ -35,6 +37,17 @@ router.delete("/businesses/:business_id/pipelines/:pipeline_id/stages/:stage_id"
 // 🚀 PIPELINE RUNS
 router.post("/businesses/:business_id/pipelines/:pipeline_id/runs", authenticateBusinessOwner, createRunPipeline);
 router.get("/businesses/:business_id/pipelines/:pipeline_id/runs", authenticateBusinessOwner, getPipelineRuns);
+router.delete(
+  "/businesses/:business_id/pipeline-runs/:run_id",
+  authenticateBusinessOwner,
+  deleteRunPipeline
+);
+
+
+
+// 👇 Add this new route
+router.get("/businesses/:business_id/pipelines/:pipeline_id/runs/:run_id", authenticateBusinessOwner, getRunById);
+
 
 // 👷 STAGE ASSIGNMENT & STATUS
 router.put("/businesses/:business_id/pipeline-runs/:run_id/stages/:stage_id/assign", authenticateBusinessOwner, assignEmployeeToStage);

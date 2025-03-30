@@ -1,6 +1,6 @@
 import { DataTypes, Model } from "sequelize";
 import { inventoryDB } from "../../db.js";
-import PipelineStage from "./PipelineStage.js";
+
 class Pipeline extends Model {}
 
 Pipeline.init(
@@ -27,12 +27,5 @@ Pipeline.init(
     timestamps: true,
   }
 );
-Pipeline.hasMany(PipelineStage, {
-  foreignKey: "pipeline_id",
-  as: "stages",
-});
-PipelineStage.belongsTo(Pipeline, {
-  foreignKey: "pipeline_id",
-  as: "pipeline",
-});
+
 export default Pipeline;

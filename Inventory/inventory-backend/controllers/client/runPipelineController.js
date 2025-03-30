@@ -47,18 +47,73 @@ export const createRunPipeline = async (req, res) => {
     res.status(500).json({ error: "Server error while creating run" });
   }
 };
+// ✅ Get a specific pipeline run by ID
+export const getRunById = async (req, res) => {
+  try {
+    const { pipeline_id, run_id } = req.params;
+
+    const run = await Run.findOne({
+      where: {
+        id: run_id,
+        pipeline_id: pipeline_id, // make sure both match
+      },
+      include: [
+        {
+          model: InventoryItem,
+          as: "inventory_item",
+        },
+        {
+          model: RunStage,
+          as: "run_stages",
+          include: [
+            {
+              model: PipelineStage,
+              as: "pipeline_stage",
+            },
+          ],
+        },
+        {
+          model: Pipeline,
+          as: "pipeline",
+        },
+      ],
+    });
+
+    if (!run) return res.status(404).json({ error: "Run not found" });
+
+    res.json({ run });
+  } catch (err) {
+    console.error("Fetch run by ID error:", err);
+    res.status(500).json({ error: "Failed to fetch run" });
+  }
+};
 
 // ✅ Get all pipeline runs for a business
 export const getPipelineRuns = async (req, res) => {
   try {
-    const { business_id } = req.params;
+    const { pipeline_id } = req.params;
 
     const runs = await Run.findAll({
-      where: { business_id },
+      where: { pipeline_id },
       include: [
-        { model: Pipeline, as: "pipeline" },
-        { model: InventoryItem, as: "inventory_item" },
-        { model: RunStage, as: "stages", order: [["order", "ASC"]] },
+        {
+          model: Pipeline,
+          as: "pipeline",
+        },
+        {
+          model: InventoryItem,
+          as: "inventory_item",
+        },
+        {
+          model: RunStage,
+          as: "run_stages",
+          include: [
+            {
+              model: PipelineStage,
+              as: "pipeline_stage", // Ensure RunStage.belongsTo(PipelineStage, { as: 'stage' }) exists
+            },
+          ],
+        },
       ],
       order: [["createdAt", "DESC"]],
     });
@@ -69,7 +124,6 @@ export const getPipelineRuns = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch pipeline runs" });
   }
 };
-
 // ✅ Assign an employee to a stage
 export const assignEmployeeToStage = async (req, res) => {
   try {
@@ -146,3 +200,29 @@ export const getProcessLogs = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch logs" });
   }
 };
+// ✅ Delete a pipeline run
+export const deleteRunPipeline = async (req, res) => {
+  try {
+    const { run_id } = req.params;
+
+    const run = await Run.findByPk(run_id, {
+      include: [{ model: RunStage, as: "run_stages" }],
+    });
+
+    if (!run) return res.status(404).json({ error: "Run not found" });
+
+    // Delete related run stages first (if any)
+    if (run.run_stages && run.run_stages.length > 0) {
+      await RunStage.destroy({ where: { run_id: run.id } });
+    }
+
+    // Then delete the run itself
+    await Run.destroy({ where: { id: run.id } });
+
+    res.json({ message: "Run deleted successfully" });
+  } catch (err) {
+    console.error("Delete pipeline run error:", err);
+    res.status(500).json({ error: "Failed to delete pipeline run" });
+  }
+};
+

@@ -3,7 +3,8 @@ import {
   getEmployeesByBusiness, 
   createEmployeeByBusinessOwner, 
   updateEmployee, 
-  deleteEmployee ,getEmployeeById
+  deleteEmployee ,getEmployeeById,
+  searchEmployees,
 } from "../../controllers/client/employeeController.js";
 
 import { authenticateBusinessOwner, validateBusinessAccess} from "../../middlewares/client/authBusinessOwner.js";
@@ -18,6 +19,17 @@ router.get("/:business_id/employees",
     authorizeRoles("Super Admin", "Admin", "HR", "Manager", "Viewer"), 
     getEmployeesByBusiness
   );
+  router.get(
+    "/business-owners/:business_id/employees/search",
+    authenticateBusinessOwner,
+    searchEmployees
+  );
+  
+// router.get(
+//     "/business-owners/:business_id/employees/all",
+//     authenticateBusinessOwner,
+//     getAllEmployeesMinimal
+//   );
   
   
 // Business Owner Create Employee
